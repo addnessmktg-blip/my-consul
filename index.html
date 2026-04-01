@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d0f14">
+<title>移住コンサル</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --surface2: #1e2230;
+    --border: #2a2f3d;
+    --accent: #4f9cf9;
+    --accent2: #f97316;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+    --text: #e8eaf0;
+    --text2: #8892a4;
+    --text3: #4a5568;
+    --nav-h: 60px;
+    --top-h: 50px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; font-size: 15px; display: flex; flex-direction: column; }
+
+  /* TOP BAR */
+  .topbar { height: var(--top-h); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; padding-top: env(safe-area-inset-top, 0); }
+  .topbar-title { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--accent); letter-spacing: 0.08em; }
+  .topbar-goal { font-size: 11px; color: var(--text2); text-align: right; }
+  .topbar-goal span { color: var(--green); font-weight: 700; }
+
+  /* MAIN CONTENT */
+  .main { flex: 1; overflow: hidden; position: relative; }
+  .panel { display: none; position: absolute; inset: 0; overflow-y: auto; padding: 16px 16px calc(var(--nav-h) + var(--safe-bottom) + 8px); -webkit-overflow-scrolling: touch; }
+  .panel.active { display: block; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: calc(var(--nav-h) + var(--safe-bottom)); background: var(--surface); border-top: 1px solid var(--border); display: flex; z-index: 100; padding-bottom: var(--safe-bottom); }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; color: var(--text3); transition: color .2s; padding: 8px 0; }
+  .nav-item.active { color: var(--accent); }
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-label { font-size: 10px; font-weight: 500; }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .card-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text2); margin-bottom: 12px; font-family: 'Space Mono', monospace; }
+
+  /* GRID */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* STAT */
+  .stat { background: var(--surface2); border-radius: 10px; padding: 14px 12px; }
+  .stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .stat-value { font-size: 18px; font-weight: 700; font-family: 'Space Mono', monospace; line-height: 1.2; }
+  .stat-sub { font-size: 10px; color: var(--text3); margin-top: 3px; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .accent { color: var(--accent); }
+  .orange { color: var(--accent2); }
+
+  /* PROGRESS BAR */
+  .progress-wrap { background: var(--border); border-radius: 4px; height: 5px; margin-top: 8px; overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 4px; transition: width .6s ease; }
+
+  /* BIG STAT (hero) */
+  .hero-stat { background: linear-gradient(135deg, rgba(79,156,249,.1), rgba(79,156,249,.03)); border: 1px solid rgba(79,156,249,.2); border-radius: 12px; padding: 18px; margin-bottom: 12px; }
+  .hero-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+  .hero-value { font-size: 32px; font-weight: 700; font-family: 'Space Mono', monospace; }
+  .hero-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  /* TABLE */
+  .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .table td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
+  .table tr:last-child td { border-bottom: none; }
+
+  /* FORM */
+  .form-stack { display: flex; flex-direction: column; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  input, select, textarea {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 12px 14px; font-size: 16px;
+    font-family: 'Noto Sans JP', sans-serif; outline: none; width: 100%;
+    -webkit-appearance: none; transition: border-color .2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238892a4' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  .btn { width: 100%; padding: 14px; border-radius: 10px; border: none; cursor: pointer; font-size: 15px; font-family: 'Noto Sans JP', sans-serif; font-weight: 700; transition: all .15s; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:active { background: #3b82f6; transform: scale(.98); }
+  .btn-danger-sm { background: rgba(239,68,68,.15); color: var(--red); border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+  .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 8px; border: none; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; font-weight: 500; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+  .btn-outline:active { background: var(--surface2); }
+
+  /* INLINE EDIT */
+  .inline-edit { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .inline-edit input { flex: 1; font-size: 16px; padding: 8px 12px; }
+  .inline-edit .btn-sm { flex-shrink: 0; }
+  .edit-trigger { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .edit-icon { font-size: 14px; color: var(--text3); }
+
+  /* CHAT */
+  .chat-outer { display: flex; flex-direction: column; position: absolute; inset: 0; padding-bottom: calc(var(--nav-h) + var(--safe-bottom)); }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch; }
+  .msg { max-width: 85%; }
+  .msg-user { align-self: flex-end; }
+  .msg-ai { align-self: flex-start; }
+  .msg-bubble { padding: 12px 14px; border-radius: 16px; line-height: 1.6; font-size: 14px; }
+  .msg-user .msg-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+  .msg-ai .msg-bubble { background: var(--surface2); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .msg-time { font-size: 10px; color: var(--text3); margin-top: 3px; text-align: right; }
+  .msg-ai .msg-time { text-align: left; }
+  .chat-input-area { padding: 10px 12px; border-top: 1px solid var(--border); background: var(--surface); display: flex; gap: 10px; align-items: flex-end; }
+  .chat-input-area textarea { flex: 1; resize: none; min-height: 44px; max-height: 100px; line-height: 1.5; padding: 10px 12px; border-radius: 22px; font-size: 15px; }
+  .send-btn { width: 44px; height: 44px; min-width: 44px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .send-btn:active { transform: scale(.92); }
+  .thinking { display: flex; align-items: center; gap: 6px; color: var(--text2); font-size: 12px; padding: 12px 16px; background: var(--surface2); border-radius: 16px; border: 1px solid var(--border); width: fit-content; }
+  .dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: bounce .8s infinite; }
+  .dot:nth-child(2) { animation-delay: .2s; }
+  .dot:nth-child(3) { animation-delay: .4s; }
+  @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+  /* API KEY SETUP */
+  .apikey-setup { padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; flex: 1; }
+  .apikey-setup .card { width: 100%; max-width: 400px; }
+
+  /* ROADMAP */
+  .roadmap-row { display: flex; gap: 0; margin-bottom: 2px; align-items: stretch; }
+  .rm-month { width: 68px; flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text2); padding: 10px 0; display: flex; align-items: center; }
+  .rm-line { width: 20px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+  .rm-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 14px; }
+  .rm-vline { width: 2px; flex: 1; background: var(--border); margin: 2px 0; }
+  .rm-content { flex: 1; background: var(--surface2); border-radius: 8px; padding: 10px 12px; margin: 3px 0; }
+  .rm-content.current { border: 1px solid var(--accent); background: rgba(79,156,249,.05); }
+  .rm-task { font-size: 13px; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+  .rm-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 10px; color: var(--text2); }
+  .tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; margin-right: 4px; }
+  .tag-warn { background: rgba(234,179,8,.15); color: var(--yellow); }
+  .tag-baby { background: rgba(249,115,22,.15); color: var(--accent2); }
+  .tag-depart { background: rgba(34,197,94,.15); color: var(--green); }
+  .tag-check { background: rgba(79,156,249,.15); color: var(--accent); }
+
+  /* MONTH SELECTOR */
+  .month-selector { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .month-selector .month-label { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent); min-width: 70px; text-align: center; }
+  .month-nav-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .month-nav-btn:active { background: var(--surface); }
+  .month-nav-btn:disabled { opacity: .3; }
+  .month-current-btn { padding: 6px 12px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); color: var(--accent); cursor: pointer; font-size: 11px; font-family: 'Noto Sans JP', sans-serif; margin-left: auto; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* EXPENSE ITEM */
+  .exp-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .exp-item:last-child { border-bottom: none; }
+  .exp-cat { font-size: 13px; font-weight: 500; }
+  .exp-memo { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .exp-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .exp-amt { font-family: 'Space Mono', monospace; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">▸ MY CONSUL</div>
+  <div class="topbar-goal">2028/1 出発 ／ 目標 <span>250万</span></div>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="panel active" id="panel-dashboard">
+
+  <div class="month-selector">
+    <button class="month-nav-btn" id="month-prev" onclick="changeMonth(-1)">◀</button>
+    <div class="month-label" id="view-month-label"></div>
+    <button class="month-nav-btn" id="month-next" onclick="changeMonth(1)">▶</button>
+    <button class="month-current-btn" onclick="goCurrentMonth()">今月</button>
+  </div>
+
+  <div class="hero-stat">
+    <div class="hero-label">累計資産</div>
+    <div id="asset-display">
+      <div class="edit-trigger" onclick="toggleAssetEdit(true)">
+        <span class="hero-value green" id="dash-total-asset">¥1,730,000</span>
+        <span class="edit-icon">✏️</span>
+      </div>
+    </div>
+    <div id="asset-edit" style="display:none">
+      <div class="inline-edit">
+        <input type="number" id="input-asset" placeholder="1730000" inputmode="numeric">
+        <button class="btn-sm btn-primary" onclick="saveAsset()">保存</button>
+        <button class="btn-sm btn-outline" onclick="toggleAssetEdit(false)">戻す</button>
+      </div>
+    </div>
+    <div class="hero-sub">目標まで残り <span id="dash-remaining">¥770,000</span></div>
+    <div class="progress-wrap"><div class="progress-bar" id="pb-asset" style="background:var(--green);width:69%"></div></div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:12px">
+    <div class="stat">
+      <div class="stat-label">今月の副業収入</div>
+      <div class="stat-value accent" id="dash-salon">¥0</div>
+      <div class="stat-sub">目標: <span id="dash-salon-target">¥50,000</span></div>
+      <div class="progress-wrap"><div class="progress-bar" id="pb-salon" style="background:var(--accent);width:0%"></div></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">今月の変動費</div>
+      <div class="stat-value" id="dash-variable">¥0</div>
+      <div class="stat-sub">上限: ¥50,000</div>
+      <div class="progress-wrap"><div class="progress-bar" id="pb-variable" style="background:var(--green);width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="stat" style="margin-bottom:12px">
+    <div class="stat-label">今月の貯金見込み</div>
+    <div class="stat-value" id="dash-chokin">¥0</div>
+    <div class="stat-sub">死守ライン: ¥50,000</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">今月サマリー（<span id="current-month-label"></span>）</div>
+    <table class="table">
+      <tr><td style="color:var(--text2)">業務委託（確定）</td><td style="text-align:right;font-family:'Space Mono',monospace">¥270,000</td></tr>
+      <tr><td style="color:var(--text2)">副業目標</td><td style="text-align:right;font-family:'Space Mono',monospace" id="s-salon-target">¥50,000</td></tr>
+      <tr><td style="color:var(--text2)">固定費</td><td style="text-align:right;font-family:'Space Mono',monospace" id="s-fixed">¥212,702</td></tr>
+      <tr><td style="color:var(--text2)">変動費上限</td><td style="text-align:right;font-family:'Space Mono',monospace">¥50,000</td></tr>
+      <tr style="border-top:1px solid var(--border)"><td style="font-weight:700">貯金目標</td><td style="text-align:right;font-family:'Space Mono',monospace;color:var(--green);font-weight:700" id="s-chokin-target">-</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">副業収入を記録</div>
+    <div class="form-stack">
+      <div class="form-group">
+        <label>今月の副業収入（円）</label>
+        <input type="number" id="input-salon" placeholder="30000" inputmode="numeric">
+      </div>
+      <div class="form-group">
+        <label>メモ</label>
+        <input type="text" id="input-salon-memo" placeholder="サロンA Web構築">
+      </div>
+      <button class="btn btn-primary" onclick="saveSalonIncome()">保存する</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">今月の変動費内訳</div>
+    <div id="expense-summary-list" style="color:var(--text2);font-size:13px;text-align:center;padding:16px">まだ支出が入力されていません</div>
+  </div>
+</div>
+
+<!-- EXPENSE -->
+<div class="panel" id="panel-expense">
+  <div class="stat" style="margin-bottom:12px">
+    <div class="stat-label">今月の変動費合計</div>
+    <div style="font-size:28px;font-weight:700;font-family:'Space Mono',monospace;margin:4px 0" id="exp-total-disp">¥0</div>
+    <div style="font-size:12px;color:var(--text2)">上限まで残り <span id="exp-remaining" class="green">¥50,000</span></div>
+    <div class="progress-wrap"><div class="progress-bar" id="pb-exp" style="background:var(--green);width:0%"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">支出を追加</div>
+    <div class="form-stack">
+      <div class="form-group">
+        <label>日付</label>
+        <input type="date" id="exp-date">
+      </div>
+      <div class="form-group">
+        <label>カテゴリ</label>
+        <select id="exp-category">
+          <option value="食費">食費</option>
+          <option value="外食">外食</option>
+          <option value="カフェ">カフェ（仕事）</option>
+          <option value="日用品">日用品</option>
+          <option value="交通費">交通費</option>
+          <option value="医療">医療</option>
+          <option value="娯楽">娯楽</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>金額（円）</label>
+        <input type="number" id="exp-amount" placeholder="1500" inputmode="numeric">
+      </div>
+      <div class="form-group">
+        <label>メモ（任意）</label>
+        <input type="text" id="exp-memo" placeholder="スーパー">
+      </div>
+      <button class="btn btn-primary" onclick="addExpense()">追加する</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">カテゴリ別</div>
+    <div id="cat-breakdown"><div style="color:var(--text2);font-size:12px;text-align:center;padding:12px">まだ入力がありません</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">履歴</div>
+    <div id="expense-list"><div style="color:var(--text2);font-size:12px;text-align:center;padding:12px">まだ入力がありません</div></div>
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<div class="panel" id="panel-roadmap">
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">ゴール逆算サマリー</div>
+    <div class="grid3">
+      <div class="stat"><div class="stat-label">出発まで</div><div class="stat-value accent" id="months-left">--ヶ月</div></div>
+      <div class="stat"><div class="stat-label">必要貯金（月）</div><div class="stat-value yellow">¥35,000</div><div class="stat-sub">死守ライン</div></div>
+      <div class="stat"><div class="stat-label">損切り判断</div><div class="stat-value orange">2026/6末</div><div class="stat-sub">受注0なら撤退</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ロードマップ</div>
+    <div id="roadmap-list"></div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div class="panel" id="panel-chat" style="padding:0;overflow:hidden">
+  <div class="chat-outer">
+    <!-- API Key Setup (shown if no key) -->
+    <div id="apikey-area" class="apikey-setup" style="display:none">
+      <div class="card">
+        <div class="card-title">APIキー設定</div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">
+          AIコンサル機能を使うには、Anthropic APIキーが必要です。<br>
+          キーはこの端末のブラウザ内にのみ保存されます。
+        </p>
+        <div class="form-stack">
+          <div class="form-group">
+            <label>Anthropic API Key</label>
+            <input type="password" id="input-apikey" placeholder="sk-ant-...">
+          </div>
+          <button class="btn btn-primary" onclick="saveApiKey()">設定する</button>
+        </div>
+      </div>
+    </div>
+    <!-- Chat area (shown if key exists) -->
+    <div id="chat-area" style="display:none;flex:1;display:flex;flex-direction:column">
+      <div style="padding:6px 12px;display:flex;justify-content:flex-end">
+        <button class="btn-sm btn-outline" onclick="showApiKeySetup()" style="font-size:10px;padding:4px 10px">APIキー変更</button>
+      </div>
+      <div class="chat-messages" id="chat-messages">
+        <div class="msg msg-ai">
+          <div class="msg-bubble">
+            こんにちは！移住コンサルです👋<br><br>
+            あなたの状況を把握してます：<br>
+            ・業務委託27万（確定）<br>
+            ・サロン副業で月3〜15万上乗せ目標<br>
+            ・2028/1 マレーシア移住<br>
+            ・6月末が損切り判断ポイント<br><br>
+            何でも相談してください。
+          </div>
+          <div class="msg-time">システム</div>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <textarea id="chat-input" placeholder="相談内容を入力..." rows="1" oninput="autoResize(this)" onkeydown="handleChatKey(event)"></textarea>
+        <button class="send-btn" onclick="sendChat()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end main -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-label">ホーム</span>
+  </div>
+  <div class="nav-item" id="nav-expense" onclick="showTab('expense')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span class="nav-label">支出入力</span>
+  </div>
+  <div class="nav-item" id="nav-roadmap" onclick="showTab('roadmap')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span class="nav-label">ロードマップ</span>
+  </div>
+  <div class="nav-item" id="nav-chat" onclick="showTab('chat')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span class="nav-label">AIコンサル</span>
+  </div>
+</nav>
+
+<script>
+// ======= AUTO CURRENT MONTH =======
+function getCurrentMonth() {
+  const now = new Date();
+  return now.getFullYear() + '/' + (now.getMonth() + 1);
+}
+
+const CURRENT_MONTH = getCurrentMonth();
+
+// ======= ROADMAP DATA =======
+const ROADMAP = [
+  { month:'2026/4',  task:'サロン営業継続（週10件）・初受注1件',   savings:'117万', incomeTarget:50000,   tag:'', fixed:212702 },
+  { month:'2026/5',  task:'2件受注・損切り判断準備',               savings:'124万', incomeTarget:100000,  tag:'', fixed:204002 },
+  { month:'2026/6',  task:'損切り判断月：受注0なら撤退',           savings:'131万', incomeTarget:100000,  tag:'warn', fixed:204002 },
+  { month:'2026/7',  task:'案件2〜3本安定化・次の手決める',        savings:'138万', incomeTarget:100000,  tag:'', fixed:204002 },
+  { month:'2026/8',  task:'出産・副業セーブ',                      savings:'145万', incomeTarget:50000,   tag:'baby', fixed:204002 },
+  { month:'2026/9',  task:'仕事ペース戻す',                        savings:'152万', incomeTarget:100000,  tag:'', fixed:204002 },
+  { month:'2026/10', task:'月収45万到達目標・視察検討',            savings:'159万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2026/11', task:'視察予約（航空券・ホテル）',             savings:'166万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2026/12', task:'マレーシア視察',                        savings:'173万', incomeTarget:150000,  tag:'check', fixed:204002 },
+  { month:'2027/1',  task:'奥さんと移住判断',                      savings:'180万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2027/2',  task:'移住決定なら準備スタート',              savings:'187万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2027/3',  task:'ビザ種類決める',                        savings:'194万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2027/4',  task:'猫：マイクロチップ',                    savings:'201万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2027/5',  task:'猫：狂犬病ワクチン',                    savings:'208万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2027/6',  task:'中間チェック（貯金200万近く）',          savings:'215万', incomeTarget:150000,  tag:'check', fixed:204002 },
+  { month:'2027/7',  task:'猫：抗体検査',                          savings:'222万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2027/8',  task:'家探し（日本からオンライン）',           savings:'229万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2027/9',  task:'ビザ申請',                              savings:'236万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2027/10', task:'家契約・海外保険決定',                  savings:'243万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2027/11', task:'保険・荷物整理',                        savings:'250万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2027/12', task:'最終準備・お金確認',                    savings:'257万', incomeTarget:150000,  tag:'', fixed:204002 },
+  { month:'2028/1',  task:'出発🎉',                               savings:'250万以上', incomeTarget:150000, tag:'depart', fixed:204002 },
+];
+
+// ======= STATE (month-keyed) =======
+function migrateState(raw) {
+  if (!raw) return { totalAsset: 1730000, apiKey: '', months: {} };
+  // Migrate from old flat format
+  if (!raw.months) {
+    const oldMonth = raw._month || CURRENT_MONTH;
+    const migrated = {
+      totalAsset: raw.totalAsset || 1730000,
+      apiKey: raw.apiKey || '',
+      months: {}
+    };
+    migrated.months[oldMonth] = {
+      salonIncome: raw.salonIncome || 0,
+      salonMemo: raw.salonMemo || '',
+      expenses: raw.expenses || [],
+    };
+    return migrated;
+  }
+  return raw;
+}
+
+let state = migrateState(JSON.parse(localStorage.getItem('consul_state') || 'null'));
+let viewMonth = CURRENT_MONTH; // which month the user is viewing
+
+function getMonthData(month) {
+  if (!state.months[month]) {
+    state.months[month] = { salonIncome: 0, salonMemo: '', expenses: [] };
+  }
+  return state.months[month];
+}
+
+function getRoadmapData(month) {
+  return ROADMAP.find(r => r.month === month) || { incomeTarget: 50000, fixed: 204002 };
+}
+
+function saveState() {
+  localStorage.setItem('consul_state', JSON.stringify(state));
+}
+
+// ======= INIT =======
+function init() {
+  viewMonth = CURRENT_MONTH;
+  updateViewMonthLabel();
+  updateDashboard();
+  renderRoadmap();
+  updateExpenseUI();
+  updateMonthsLeft();
+  initChatUI();
+  prefillSalonInput();
+}
+
+// ======= MONTH NAVIGATION =======
+function getAllMonths() {
+  const months = ROADMAP.map(r => r.month);
+  // Also include any months in state that aren't in roadmap
+  Object.keys(state.months).forEach(m => { if (!months.includes(m)) months.push(m); });
+  return months.sort();
+}
+
+function changeMonth(dir) {
+  const months = getAllMonths();
+  const idx = months.indexOf(viewMonth);
+  const newIdx = idx + dir;
+  if (newIdx >= 0 && newIdx < months.length) {
+    viewMonth = months[newIdx];
+    updateViewMonthLabel();
+    updateDashboard();
+    updateExpenseUI();
+    prefillSalonInput();
+  }
+}
+
+function goCurrentMonth() {
+  viewMonth = CURRENT_MONTH;
+  updateViewMonthLabel();
+  updateDashboard();
+  updateExpenseUI();
+  prefillSalonInput();
+}
+
+function updateViewMonthLabel() {
+  document.getElementById('view-month-label').textContent = viewMonth;
+  const months = getAllMonths();
+  const idx = months.indexOf(viewMonth);
+  document.getElementById('month-prev').disabled = idx <= 0;
+  document.getElementById('month-next').disabled = idx >= months.length - 1;
+}
+
+function prefillSalonInput() {
+  const md = getMonthData(viewMonth);
+  document.getElementById('input-salon').value = md.salonIncome || '';
+  document.getElementById('input-salon-memo').value = md.salonMemo || '';
+}
+
+// ======= TABS =======
+function showTab(name) {
+  document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('nav-' + name).classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'chat') { initChatUI(); setTimeout(scrollChat, 100); }
+}
+
+// ======= ASSET EDIT =======
+function toggleAssetEdit(show) {
+  document.getElementById('asset-display').style.display = show ? 'none' : '';
+  document.getElementById('asset-edit').style.display = show ? '' : 'none';
+  if (show) {
+    document.getElementById('input-asset').value = state.totalAsset;
+    document.getElementById('input-asset').focus();
+  }
+}
+
+function saveAsset() {
+  const val = parseInt(document.getElementById('input-asset').value) || 0;
+  state.totalAsset = val;
+  saveState();
+  toggleAssetEdit(false);
+  updateDashboard();
+}
+
+// ======= DASHBOARD =======
+function updateDashboard() {
+  const md = getMonthData(viewMonth);
+  const rd = getRoadmapData(viewMonth);
+  const totalVar = md.expenses.reduce((s, e) => s + e.amount, 0);
+  const salon = md.salonIncome;
+  const target = rd.incomeTarget;
+  const fixed = rd.fixed;
+  const chokin = 270000 + salon - fixed - totalVar;
+
+  document.getElementById('dash-total-asset').textContent = '¥' + state.totalAsset.toLocaleString();
+  document.getElementById('dash-salon').textContent = '¥' + salon.toLocaleString();
+  document.getElementById('dash-salon-target').textContent = '¥' + target.toLocaleString();
+  document.getElementById('dash-variable').textContent = '¥' + totalVar.toLocaleString();
+  document.getElementById('dash-chokin').textContent = '¥' + chokin.toLocaleString();
+  document.getElementById('dash-chokin').className = 'stat-value ' + (chokin >= 50000 ? 'green' : chokin >= 30000 ? 'yellow' : 'red');
+
+  const remaining = 2500000 - state.totalAsset;
+  document.getElementById('dash-remaining').textContent = '¥' + remaining.toLocaleString();
+
+  setBar('pb-salon', salon / target * 100, salon >= target ? 'var(--green)' : 'var(--accent)');
+  setBar('pb-variable', totalVar / 50000 * 100, totalVar > 50000 ? 'var(--red)' : totalVar > 40000 ? 'var(--yellow)' : 'var(--green)');
+  setBar('pb-asset', state.totalAsset / 2500000 * 100, 'var(--green)');
+
+  document.getElementById('current-month-label').textContent = viewMonth;
+  document.getElementById('s-salon-target').textContent = '¥' + target.toLocaleString();
+  document.getElementById('s-fixed').textContent = '¥' + fixed.toLocaleString();
+  document.getElementById('s-chokin-target').textContent = '¥' + (270000 + target - fixed - 50000).toLocaleString();
+
+  // expense summary in dashboard
+  const catMap = {};
+  md.expenses.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
+  const cats = Object.entries(catMap).sort((a,b) => b[1]-a[1]);
+  const el = document.getElementById('expense-summary-list');
+  if (cats.length === 0) {
+    el.innerHTML = '<div style="color:var(--text2);text-align:center;padding:20px;font-size:12px">まだ支出が入力されていません</div>';
+  } else {
+    el.innerHTML = cats.map(([cat, amt]) =>
+      `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span style="color:var(--text2)">${cat}</span>
+        <span style="font-family:'Space Mono',monospace">¥${amt.toLocaleString()}</span>
+      </div>`
+    ).join('');
+  }
+}
+
+function setBar(id, pct, color) {
+  const el = document.getElementById(id);
+  el.style.width = Math.min(pct, 100) + '%';
+  el.style.background = color;
+}
+
+function saveSalonIncome() {
+  const val = parseInt(document.getElementById('input-salon').value) || 0;
+  const md = getMonthData(viewMonth);
+  md.salonIncome = val;
+  md.salonMemo = document.getElementById('input-salon-memo').value;
+  saveState();
+  updateDashboard();
+}
+
+// ======= EXPENSE =======
+function addExpense() {
+  const date = document.getElementById('exp-date').value || new Date().toISOString().slice(0,10);
+  const category = document.getElementById('exp-category').value;
+  const amount = parseInt(document.getElementById('exp-amount').value) || 0;
+  const memo = document.getElementById('exp-memo').value;
+  if (!amount) return;
+
+  const md = getMonthData(viewMonth);
+  md.expenses.push({ date, category, amount, memo, id: Date.now() });
+  saveState();
+  document.getElementById('exp-amount').value = '';
+  document.getElementById('exp-memo').value = '';
+  updateExpenseUI();
+  updateDashboard();
+}
+
+function deleteExpense(id) {
+  const md = getMonthData(viewMonth);
+  md.expenses = md.expenses.filter(e => e.id !== id);
+  saveState();
+  updateExpenseUI();
+  updateDashboard();
+}
+
+function updateExpenseUI() {
+  const md = getMonthData(viewMonth);
+  const total = md.expenses.reduce((s, e) => s + e.amount, 0);
+  const remaining = 50000 - total;
+
+  document.getElementById('exp-total-disp').textContent = '¥' + total.toLocaleString();
+  document.getElementById('exp-total-disp').style.color = total > 50000 ? 'var(--red)' : total > 40000 ? 'var(--yellow)' : 'var(--text)';
+  document.getElementById('exp-remaining').textContent = remaining >= 0 ? '¥' + remaining.toLocaleString() : '▲¥' + Math.abs(remaining).toLocaleString();
+  document.getElementById('exp-remaining').className = remaining >= 0 ? 'green' : 'red';
+  setBar('pb-exp', total / 50000 * 100, total > 50000 ? 'var(--red)' : total > 40000 ? 'var(--yellow)' : 'var(--green)');
+
+  // category breakdown
+  const catMap = {};
+  md.expenses.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
+  const catEl = document.getElementById('cat-breakdown');
+  const catEntries = Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
+  if (catEntries.length === 0) {
+    catEl.innerHTML = '<div style="color:var(--text2);font-size:12px;text-align:center;padding:12px">まだ入力がありません</div>';
+  } else {
+    catEl.innerHTML = catEntries.map(([cat, amt]) => {
+      const pct = Math.round(amt / total * 100);
+      return `<div style="margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+          <span style="color:var(--text2)">${cat}</span>
+          <span style="font-family:'Space Mono',monospace">¥${amt.toLocaleString()} (${pct}%)</span>
+        </div>
+        <div class="progress-wrap"><div class="progress-bar" style="background:var(--accent);width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // list
+  const sorted = [...md.expenses].sort((a,b) => b.id - a.id);
+  document.getElementById('expense-list').innerHTML = sorted.length === 0
+    ? '<div style="color:var(--text2);font-size:12px;text-align:center;padding:12px">まだ入力がありません</div>'
+    : sorted.map(e => `
+      <div class="exp-item">
+        <div>
+          <div class="exp-cat">${e.category}</div>
+          <div class="exp-memo">${e.memo ? e.memo + ' · ' : ''}${e.date}</div>
+        </div>
+        <div class="exp-right">
+          <span class="exp-amt">¥${e.amount.toLocaleString()}</span>
+          <button class="btn-danger-sm" onclick="deleteExpense(${e.id})">削除</button>
+        </div>
+      </div>`).join('');
+
+  document.getElementById('exp-date').value = new Date().toISOString().slice(0,10);
+}
+
+// ======= ROADMAP =======
+function renderRoadmap() {
+  const list = document.getElementById('roadmap-list');
+  list.innerHTML = ROADMAP.map((r, i) => {
+    const isCurrent = r.month === CURRENT_MONTH;
+    const isPast = i < ROADMAP.findIndex(x => x.month === CURRENT_MONTH);
+    const dotColor = isPast ? 'var(--text3)' : isCurrent ? 'var(--accent)' : r.tag === 'depart' ? 'var(--green)' : r.tag === 'warn' ? 'var(--yellow)' : 'var(--border)';
+    const tag = r.tag === 'warn' ? '<span class="tag tag-warn">⚠️ 損切り</span>' :
+                r.tag === 'baby' ? '<span class="tag tag-baby">🍼 出産</span>' :
+                r.tag === 'depart' ? '<span class="tag tag-depart">🛫 出発</span>' :
+                r.tag === 'check' ? '<span class="tag tag-check">📊 チェック</span>' : '';
+    return `
+      <div class="roadmap-row">
+        <div class="rm-month">${r.month}</div>
+        <div class="rm-line">
+          <div class="rm-dot" style="background:${dotColor};${isCurrent?'box-shadow:0 0 8px var(--accent)':''}"></div>
+          ${i < ROADMAP.length-1 ? '<div class="rm-vline"></div>' : ''}
+        </div>
+        <div class="rm-content${isCurrent?' current':''}">
+          <div class="rm-task">${tag}${r.task}</div>
+          <div class="rm-meta">
+            <span>貯金累計: ${r.savings}</span>
+            <span>副業目標: ¥${r.incomeTarget.toLocaleString()}</span>
+            ${isCurrent ? '<span style="color:var(--accent)">◀ 今ここ</span>' : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateMonthsLeft() {
+  const now = new Date();
+  const depart = new Date('2028-01-01');
+  const months = Math.round((depart - now) / (1000 * 60 * 60 * 24 * 30));
+  document.getElementById('months-left').textContent = months + 'ヶ月';
+}
+
+// ======= API KEY =======
+function initChatUI() {
+  const hasKey = !!state.apiKey;
+  document.getElementById('apikey-area').style.display = hasKey ? 'none' : 'flex';
+  const chatArea = document.getElementById('chat-area');
+  chatArea.style.display = hasKey ? 'flex' : 'none';
+  chatArea.style.flexDirection = 'column';
+}
+
+function saveApiKey() {
+  const key = document.getElementById('input-apikey').value.trim();
+  if (!key) return;
+  state.apiKey = key;
+  saveState();
+  initChatUI();
+}
+
+function showApiKeySetup() {
+  document.getElementById('input-apikey').value = state.apiKey;
+  document.getElementById('apikey-area').style.display = 'flex';
+  const chatArea = document.getElementById('chat-area');
+  chatArea.style.display = 'none';
+}
+
+// ======= CHAT =======
+const SYSTEM_PROMPT = `あなたはフリーランスマーケターの個人コンサルタントです。以下の状況を完全に把握した上で、ゴールから逆算して具体的なアドバイスをしてください。
+
+【プロフィール】
+- フリーランス（個人）・マーケター
+- 得意：Meta広告・TikTok広告・LP構成・LINEマーケ（Lステップ）・導線設計・クリエイティブ制作
+- 業務委託1社で月27万（手取り）・安定・切られる心配なし
+- 副業でサロン向けWebサイト構築→クロスセル（広告・導線設計）を狙っている
+- AIでデモサイトを作り持参営業中（3月から開始・現在10件営業・0受注）
+- 奥さんと2人暮らし・2026年8月に出産予定
+
+【財務状況】
+- 手取り：27万（確定収入はこれのみ。物販・ポイ活は計画に含めない）
+- 固定費：約21.3万（〜4月）・5月以降は約20.4万
+- 変動費：月5万上限
+- 現在の資産：173万（投資アプリ＋口座）
+- 最終目標貯金：250万
+
+【移住計画】
+- 2028年1月 マレーシア移住・出発
+- 2026年12月 マレーシア視察予定
+- 2026年6月末：損切り判断（サロン営業0受注なら撤退・次の手は未定）
+
+【副業月次目標（きつめ設定・ゴール逆算）】
+- 4月：5万（初受注1件）
+- 5月〜6月：10万（2件受注）
+- 7月以降：10万安定
+- 10月以降：15万（月収45万目標）
+
+【重要な方針】
+- 支出に合わせて目標を下げない。きつい目標から逆算する。
+- 確定していない収入は計画に入れない。
+- 副業がうまくいけば業務委託を超える収入を狙える。
+
+回答は日本語で、具体的・簡潔に。共感より行動。甘やかさない。`;
+
+let chatHistory = [];
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  if (!state.apiKey) { showApiKeySetup(); return; }
+
+  input.value = '';
+  input.style.height = 'auto';
+  appendMsg(text, 'user');
+  chatHistory.push({ role: 'user', content: text });
+
+  const thinking = document.createElement('div');
+  thinking.className = 'msg msg-ai';
+  thinking.innerHTML = `<div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>考え中...</span></div>`;
+  document.getElementById('chat-messages').appendChild(thinking);
+  scrollChat();
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': state.apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: chatHistory,
+      })
+    });
+    const data = await res.json();
+    thinking.remove();
+    if (data.error) {
+      appendMsg('エラー: ' + (data.error.message || JSON.stringify(data.error)), 'ai');
+      return;
+    }
+    const reply = data.content?.map(c => c.text || '').join('') || 'エラーが発生しました。';
+    appendMsg(reply, 'ai');
+    chatHistory.push({ role: 'assistant', content: reply });
+  } catch(e) {
+    thinking.remove();
+    appendMsg('通信エラーが発生しました: ' + e.message, 'ai');
+  }
+}
+
+function appendMsg(text, role) {
+  const wrap = document.createElement('div');
+  wrap.className = 'msg msg-' + role;
+  const time = new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
+  wrap.innerHTML = `<div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-time">${time}</div>`;
+  document.getElementById('chat-messages').appendChild(wrap);
+  scrollChat();
+}
+
+function scrollChat() {
+  const el = document.getElementById('chat-messages');
+  el.scrollTop = el.scrollHeight;
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChat();
+  }
+}
+
+init();
+</script>
+</body>
+</html>
