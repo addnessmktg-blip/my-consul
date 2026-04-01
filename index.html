@@ -126,30 +126,6 @@
   .edit-trigger { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
   .edit-icon { font-size: 14px; color: var(--text3); }
 
-  /* CHAT */
-  .chat-outer { display: flex; flex-direction: column; position: absolute; inset: 0; padding-bottom: calc(var(--nav-h) + var(--safe-bottom)); }
-  .chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch; }
-  .msg { max-width: 85%; }
-  .msg-user { align-self: flex-end; }
-  .msg-ai { align-self: flex-start; }
-  .msg-bubble { padding: 12px 14px; border-radius: 16px; line-height: 1.6; font-size: 14px; }
-  .msg-user .msg-bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
-  .msg-ai .msg-bubble { background: var(--surface2); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
-  .msg-time { font-size: 10px; color: var(--text3); margin-top: 3px; text-align: right; }
-  .msg-ai .msg-time { text-align: left; }
-  .chat-input-area { padding: 10px 12px; border-top: 1px solid var(--border); background: var(--surface); display: flex; gap: 10px; align-items: flex-end; }
-  .chat-input-area textarea { flex: 1; resize: none; min-height: 44px; max-height: 100px; line-height: 1.5; padding: 10px 12px; border-radius: 22px; font-size: 15px; }
-  .send-btn { width: 44px; height: 44px; min-width: 44px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-  .send-btn:active { transform: scale(.92); }
-  .thinking { display: flex; align-items: center; gap: 6px; color: var(--text2); font-size: 12px; padding: 12px 16px; background: var(--surface2); border-radius: 16px; border: 1px solid var(--border); width: fit-content; }
-  .dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; animation: bounce .8s infinite; }
-  .dot:nth-child(2) { animation-delay: .2s; }
-  .dot:nth-child(3) { animation-delay: .4s; }
-  @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
-
-  /* API KEY SETUP */
-  .apikey-setup { padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; align-items: center; justify-content: center; flex: 1; }
-  .apikey-setup .card { width: 100%; max-width: 400px; }
 
   /* ROADMAP */
   .roadmap-row { display: flex; gap: 0; margin-bottom: 2px; align-items: stretch; }
@@ -352,54 +328,6 @@
   </div>
 </div>
 
-<!-- CHAT -->
-<div class="panel" id="panel-chat" style="padding:0;overflow:hidden">
-  <div class="chat-outer">
-    <!-- API Key Setup (shown if no key) -->
-    <div id="apikey-area" class="apikey-setup" style="display:none">
-      <div class="card">
-        <div class="card-title">APIキー設定</div>
-        <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.6">
-          AIコンサル機能を使うには、Anthropic APIキーが必要です。<br>
-          キーはこの端末のブラウザ内にのみ保存されます。
-        </p>
-        <div class="form-stack">
-          <div class="form-group">
-            <label>Anthropic API Key</label>
-            <input type="password" id="input-apikey" placeholder="sk-ant-...">
-          </div>
-          <button class="btn btn-primary" onclick="saveApiKey()">設定する</button>
-        </div>
-      </div>
-    </div>
-    <!-- Chat area (shown if key exists) -->
-    <div id="chat-area" style="display:none;flex:1;display:flex;flex-direction:column">
-      <div style="padding:6px 12px;display:flex;justify-content:flex-end">
-        <button class="btn-sm btn-outline" onclick="showApiKeySetup()" style="font-size:10px;padding:4px 10px">APIキー変更</button>
-      </div>
-      <div class="chat-messages" id="chat-messages">
-        <div class="msg msg-ai">
-          <div class="msg-bubble">
-            こんにちは！移住コンサルです👋<br><br>
-            あなたの状況を把握してます：<br>
-            ・業務委託27万（確定）<br>
-            ・サロン副業で月3〜15万上乗せ目標<br>
-            ・2028/1 マレーシア移住<br>
-            ・6月末が損切り判断ポイント<br><br>
-            何でも相談してください。
-          </div>
-          <div class="msg-time">システム</div>
-        </div>
-      </div>
-      <div class="chat-input-area">
-        <textarea id="chat-input" placeholder="相談内容を入力..." rows="1" oninput="autoResize(this)" onkeydown="handleChatKey(event)"></textarea>
-        <button class="send-btn" onclick="sendChat()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
 </div><!-- end main -->
 
@@ -417,10 +345,6 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
     <span class="nav-label">ロードマップ</span>
   </div>
-  <div class="nav-item" id="nav-chat" onclick="showTab('chat')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-    <span class="nav-label">AIコンサル</span>
-  </div>
 </nav>
 
 <script>
@@ -434,39 +358,38 @@ const CURRENT_MONTH = getCurrentMonth();
 
 // ======= ROADMAP DATA =======
 const ROADMAP = [
-  { month:'2026/4',  task:'サロン営業継続（週10件）・初受注1件',   savings:'117万', incomeTarget:50000,   tag:'', fixed:212702 },
-  { month:'2026/5',  task:'2件受注・損切り判断準備',               savings:'124万', incomeTarget:100000,  tag:'', fixed:204002 },
-  { month:'2026/6',  task:'損切り判断月：受注0なら撤退',           savings:'131万', incomeTarget:100000,  tag:'warn', fixed:204002 },
-  { month:'2026/7',  task:'案件2〜3本安定化・次の手決める',        savings:'138万', incomeTarget:100000,  tag:'', fixed:204002 },
-  { month:'2026/8',  task:'出産・副業セーブ',                      savings:'145万', incomeTarget:50000,   tag:'baby', fixed:204002 },
-  { month:'2026/9',  task:'仕事ペース戻す',                        savings:'152万', incomeTarget:100000,  tag:'', fixed:204002 },
-  { month:'2026/10', task:'月収45万到達目標・視察検討',            savings:'159万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2026/11', task:'視察予約（航空券・ホテル）',             savings:'166万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2026/12', task:'マレーシア視察',                        savings:'173万', incomeTarget:150000,  tag:'check', fixed:204002 },
-  { month:'2027/1',  task:'奥さんと移住判断',                      savings:'180万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2027/2',  task:'移住決定なら準備スタート',              savings:'187万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2027/3',  task:'ビザ種類決める',                        savings:'194万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2027/4',  task:'猫：マイクロチップ',                    savings:'201万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2027/5',  task:'猫：狂犬病ワクチン',                    savings:'208万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2027/6',  task:'中間チェック（貯金200万近く）',          savings:'215万', incomeTarget:150000,  tag:'check', fixed:204002 },
-  { month:'2027/7',  task:'猫：抗体検査',                          savings:'222万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2027/8',  task:'家探し（日本からオンライン）',           savings:'229万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2027/9',  task:'ビザ申請',                              savings:'236万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2027/10', task:'家契約・海外保険決定',                  savings:'243万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2027/11', task:'保険・荷物整理',                        savings:'250万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2027/12', task:'最終準備・お金確認',                    savings:'257万', incomeTarget:150000,  tag:'', fixed:204002 },
-  { month:'2028/1',  task:'出発🎉',                               savings:'250万以上', incomeTarget:150000, tag:'depart', fixed:204002 },
+  { month:'2026/4',  task:'サロン営業継続（週10件）・初受注1件',   savings:'110万', incomeTarget:50000,   tag:'', fixed:232702 },
+  { month:'2026/5',  task:'2件受注・損切り判断準備',               savings:'116万', incomeTarget:100000,  tag:'', fixed:224002 },
+  { month:'2026/6',  task:'損切り判断月：受注0なら撤退',           savings:'122万', incomeTarget:100000,  tag:'warn', fixed:224002 },
+  { month:'2026/7',  task:'案件2〜3本安定化・次の手決める',        savings:'128万', incomeTarget:100000,  tag:'', fixed:224002 },
+  { month:'2026/8',  task:'出産・副業セーブ',                      savings:'134万', incomeTarget:50000,   tag:'baby', fixed:224002 },
+  { month:'2026/9',  task:'仕事ペース戻す',                        savings:'140万', incomeTarget:100000,  tag:'', fixed:224002 },
+  { month:'2026/10', task:'月収45万到達目標・視察検討',            savings:'146万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2026/11', task:'視察予約（航空券・ホテル）',             savings:'152万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2026/12', task:'マレーシア視察',                        savings:'158万', incomeTarget:150000,  tag:'check', fixed:224002 },
+  { month:'2027/1',  task:'奥さんと移住判断',                      savings:'164万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/2',  task:'移住決定なら準備スタート',              savings:'170万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/3',  task:'ビザ種類決める',                        savings:'176万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/4',  task:'猫：マイクロチップ',                    savings:'182万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/5',  task:'猫：狂犬病ワクチン',                    savings:'188万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/6',  task:'中間チェック（貯金200万近く）',          savings:'194万', incomeTarget:150000,  tag:'check', fixed:224002 },
+  { month:'2027/7',  task:'猫：抗体検査',                          savings:'200万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/8',  task:'家探し（日本からオンライン）',           savings:'206万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/9',  task:'ビザ申請',                              savings:'212万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/10', task:'家契約・海外保険決定',                  savings:'218万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/11', task:'保険・荷物整理',                        savings:'224万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/12', task:'最終準備・お金確認',                    savings:'230万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2028/1',  task:'出発🎉',                               savings:'236万以上', incomeTarget:150000, tag:'depart', fixed:224002 },
 ];
 
 // ======= STATE (month-keyed) =======
 function migrateState(raw) {
-  if (!raw) return { totalAsset: 1730000, apiKey: '', months: {} };
+  if (!raw) return { totalAsset: 1730000, months: {} };
   // Migrate from old flat format
   if (!raw.months) {
     const oldMonth = raw._month || CURRENT_MONTH;
     const migrated = {
       totalAsset: raw.totalAsset || 1730000,
-      apiKey: raw.apiKey || '',
       months: {}
     };
     migrated.months[oldMonth] = {
@@ -505,7 +428,6 @@ function init() {
   renderRoadmap();
   updateExpenseUI();
   updateMonthsLeft();
-  initChatUI();
   prefillSalonInput();
 }
 
@@ -558,7 +480,6 @@ function showTab(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('nav-' + name).classList.add('active');
   document.getElementById('panel-' + name).classList.add('active');
-  if (name === 'chat') { initChatUI(); setTimeout(scrollChat, 100); }
 }
 
 // ======= ASSET EDIT =======
@@ -752,141 +673,6 @@ function updateMonthsLeft() {
   document.getElementById('months-left').textContent = months + 'ヶ月';
 }
 
-// ======= API KEY =======
-function initChatUI() {
-  const hasKey = !!state.apiKey;
-  document.getElementById('apikey-area').style.display = hasKey ? 'none' : 'flex';
-  const chatArea = document.getElementById('chat-area');
-  chatArea.style.display = hasKey ? 'flex' : 'none';
-  chatArea.style.flexDirection = 'column';
-}
-
-function saveApiKey() {
-  const key = document.getElementById('input-apikey').value.trim();
-  if (!key) return;
-  state.apiKey = key;
-  saveState();
-  initChatUI();
-}
-
-function showApiKeySetup() {
-  document.getElementById('input-apikey').value = state.apiKey;
-  document.getElementById('apikey-area').style.display = 'flex';
-  const chatArea = document.getElementById('chat-area');
-  chatArea.style.display = 'none';
-}
-
-// ======= CHAT =======
-const SYSTEM_PROMPT = `あなたはフリーランスマーケターの個人コンサルタントです。以下の状況を完全に把握した上で、ゴールから逆算して具体的なアドバイスをしてください。
-
-【プロフィール】
-- フリーランス（個人）・マーケター
-- 得意：Meta広告・TikTok広告・LP構成・LINEマーケ（Lステップ）・導線設計・クリエイティブ制作
-- 業務委託1社で月27万（手取り）・安定・切られる心配なし
-- 副業でサロン向けWebサイト構築→クロスセル（広告・導線設計）を狙っている
-- AIでデモサイトを作り持参営業中（3月から開始・現在10件営業・0受注）
-- 奥さんと2人暮らし・2026年8月に出産予定
-
-【財務状況】
-- 手取り：27万（確定収入はこれのみ。物販・ポイ活は計画に含めない）
-- 固定費：約21.3万（〜4月）・5月以降は約20.4万
-- 変動費：月5万上限
-- 現在の資産：173万（投資アプリ＋口座）
-- 最終目標貯金：250万
-
-【移住計画】
-- 2028年1月 マレーシア移住・出発
-- 2026年12月 マレーシア視察予定
-- 2026年6月末：損切り判断（サロン営業0受注なら撤退・次の手は未定）
-
-【副業月次目標（きつめ設定・ゴール逆算）】
-- 4月：5万（初受注1件）
-- 5月〜6月：10万（2件受注）
-- 7月以降：10万安定
-- 10月以降：15万（月収45万目標）
-
-【重要な方針】
-- 支出に合わせて目標を下げない。きつい目標から逆算する。
-- 確定していない収入は計画に入れない。
-- 副業がうまくいけば業務委託を超える収入を狙える。
-
-回答は日本語で、具体的・簡潔に。共感より行動。甘やかさない。`;
-
-let chatHistory = [];
-
-async function sendChat() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text) return;
-  if (!state.apiKey) { showApiKeySetup(); return; }
-
-  input.value = '';
-  input.style.height = 'auto';
-  appendMsg(text, 'user');
-  chatHistory.push({ role: 'user', content: text });
-
-  const thinking = document.createElement('div');
-  thinking.className = 'msg msg-ai';
-  thinking.innerHTML = `<div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span>考え中...</span></div>`;
-  document.getElementById('chat-messages').appendChild(thinking);
-  scrollChat();
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': state.apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: SYSTEM_PROMPT,
-        messages: chatHistory,
-      })
-    });
-    const data = await res.json();
-    thinking.remove();
-    if (data.error) {
-      appendMsg('エラー: ' + (data.error.message || JSON.stringify(data.error)), 'ai');
-      return;
-    }
-    const reply = data.content?.map(c => c.text || '').join('') || 'エラーが発生しました。';
-    appendMsg(reply, 'ai');
-    chatHistory.push({ role: 'assistant', content: reply });
-  } catch(e) {
-    thinking.remove();
-    appendMsg('通信エラーが発生しました: ' + e.message, 'ai');
-  }
-}
-
-function appendMsg(text, role) {
-  const wrap = document.createElement('div');
-  wrap.className = 'msg msg-' + role;
-  const time = new Date().toLocaleTimeString('ja-JP', { hour:'2-digit', minute:'2-digit' });
-  wrap.innerHTML = `<div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div><div class="msg-time">${time}</div>`;
-  document.getElementById('chat-messages').appendChild(wrap);
-  scrollChat();
-}
-
-function scrollChat() {
-  const el = document.getElementById('chat-messages');
-  el.scrollTop = el.scrollHeight;
-}
-
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
-}
-
-function handleChatKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendChat();
-  }
-}
 
 // ======= THEME =======
 function initTheme() {
