@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d0f14">
+<title>移住コンサル</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --surface2: #f0f1f4;
+    --border: #e0e2e8;
+    --accent: #2563eb;
+    --accent2: #ea580c;
+    --green: #16a34a;
+    --red: #dc2626;
+    --yellow: #ca8a04;
+    --text: #1a1a2e;
+    --text2: #64748b;
+    --text3: #94a3b8;
+    --nav-h: 60px;
+    --top-h: 50px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  :root.dark {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --surface2: #1e2230;
+    --border: #2a2f3d;
+    --accent: #4f9cf9;
+    --accent2: #f97316;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+    --text: #e8eaf0;
+    --text2: #8892a4;
+    --text3: #4a5568;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; font-size: 15px; display: flex; flex-direction: column; }
+
+  /* TOP BAR */
+  .topbar { height: var(--top-h); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; padding-top: env(safe-area-inset-top, 0); }
+  .topbar-title { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--accent); letter-spacing: 0.08em; }
+  .topbar-goal { font-size: 11px; color: var(--text2); text-align: right; }
+  .topbar-goal span { color: var(--green); font-weight: 700; }
+  .theme-toggle { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; flex-shrink: 0; }
+
+  /* MAIN CONTENT */
+  .main { flex: 1; overflow: hidden; position: relative; }
+  .panel { display: none; position: absolute; inset: 0; overflow-y: auto; padding: 16px 16px calc(var(--nav-h) + var(--safe-bottom) + 8px); -webkit-overflow-scrolling: touch; }
+  .panel.active { display: block; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: calc(var(--nav-h) + var(--safe-bottom)); background: var(--surface); border-top: 1px solid var(--border); display: flex; z-index: 100; padding-bottom: var(--safe-bottom); }
+  .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; color: var(--text3); transition: color .2s; padding: 8px 0; }
+  .nav-item.active { color: var(--accent); }
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-label { font-size: 10px; font-weight: 500; }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+  .card-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text2); margin-bottom: 12px; font-family: 'Space Mono', monospace; }
+
+  /* GRID */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  /* STAT */
+  .stat { background: var(--surface2); border-radius: 10px; padding: 14px 12px; }
+  .stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .stat-value { font-size: 18px; font-weight: 700; font-family: 'Space Mono', monospace; line-height: 1.2; }
+  .stat-sub { font-size: 10px; color: var(--text3); margin-top: 3px; }
+  .green { color: var(--green); }
+  .red { color: var(--red); }
+  .yellow { color: var(--yellow); }
+  .accent { color: var(--accent); }
+  .orange { color: var(--accent2); }
+
+  /* PROGRESS BAR */
+  .progress-wrap { background: var(--border); border-radius: 4px; height: 5px; margin-top: 8px; overflow: hidden; }
+  .progress-bar { height: 100%; border-radius: 4px; transition: width .6s ease; }
+
+  /* BIG STAT (hero) */
+  .hero-stat { background: linear-gradient(135deg, rgba(37,99,235,.08), rgba(37,99,235,.02)); border: 1px solid rgba(37,99,235,.2); border-radius: 12px; padding: 18px; margin-bottom: 12px; }
+  :root.dark .hero-stat { background: linear-gradient(135deg, rgba(79,156,249,.1), rgba(79,156,249,.03)); border: 1px solid rgba(79,156,249,.2); }
+  .hero-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; }
+  .hero-value { font-size: 32px; font-weight: 700; font-family: 'Space Mono', monospace; }
+  .hero-sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  /* TABLE */
+  .table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .table td { padding: 10px 8px; border-bottom: 1px solid var(--border); }
+  .table tr:last-child td { border-bottom: none; }
+
+  /* FORM */
+  .form-stack { display: flex; flex-direction: column; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  input, select, textarea {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 12px 14px; font-size: 16px;
+    font-family: 'Noto Sans JP', sans-serif; outline: none; width: 100%;
+    -webkit-appearance: none; transition: border-color .2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238892a4' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  .btn { width: 100%; padding: 14px; border-radius: 10px; border: none; cursor: pointer; font-size: 15px; font-family: 'Noto Sans JP', sans-serif; font-weight: 700; transition: all .15s; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:active { background: #3b82f6; transform: scale(.98); }
+  .btn-danger-sm { background: rgba(239,68,68,.15); color: var(--red); border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; cursor: pointer; }
+  .btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 8px; border: none; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; font-weight: 500; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text2); }
+  .btn-outline:active { background: var(--surface2); }
+
+  /* INLINE EDIT */
+  .inline-edit { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  .inline-edit input { flex: 1; font-size: 16px; padding: 8px 12px; }
+  .inline-edit .btn-sm { flex-shrink: 0; }
+  .edit-trigger { cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+  .edit-icon { font-size: 14px; color: var(--text3); }
+
+
+  /* ROADMAP */
+  .roadmap-row { display: flex; gap: 0; margin-bottom: 2px; align-items: stretch; }
+  .rm-month { width: 68px; flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text2); padding: 10px 0; display: flex; align-items: center; }
+  .rm-line { width: 20px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+  .rm-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 14px; }
+  .rm-vline { width: 2px; flex: 1; background: var(--border); margin: 2px 0; }
+  .rm-content { flex: 1; background: var(--surface2); border-radius: 8px; padding: 10px 12px; margin: 3px 0; }
+  .rm-content.current { border: 1px solid var(--accent); background: rgba(79,156,249,.05); }
+  .rm-task { font-size: 13px; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+  .rm-meta { display: flex; flex-wrap: wrap; gap: 8px; font-size: 10px; color: var(--text2); }
+  .tag { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; margin-right: 4px; }
+  .tag-warn { background: rgba(234,179,8,.15); color: var(--yellow); }
+  .tag-baby { background: rgba(249,115,22,.15); color: var(--accent2); }
+  .tag-depart { background: rgba(34,197,94,.15); color: var(--green); }
+  .tag-check { background: rgba(79,156,249,.15); color: var(--accent); }
+
+  /* MONTH SELECTOR */
+  .month-selector { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .month-selector .month-label { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--accent); min-width: 70px; text-align: center; }
+  .month-nav-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .month-nav-btn:active { background: var(--surface); }
+  .month-nav-btn:disabled { opacity: .3; }
+  .month-current-btn { padding: 6px 12px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border); color: var(--accent); cursor: pointer; font-size: 11px; font-family: 'Noto Sans JP', sans-serif; margin-left: auto; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  /* EXPENSE ITEM */
+  .exp-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .exp-item:last-child { border-bottom: none; }
+  .exp-cat { font-size: 13px; font-weight: 500; }
+  .exp-memo { font-size: 11px; color: var(--text2); margin-top: 2px; }
+  .exp-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .exp-amt { font-family: 'Space Mono', monospace; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">▸ MY CONSUL</div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="topbar-goal">2028/1 出発 ／ 目標 <span>250万</span></div>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="panel active" id="panel-dashboard">
+
+  <div class="month-selector">
+    <button class="month-nav-btn" id="month-prev" onclick="changeMonth(-1)">◀</button>
+    <div class="month-label" id="view-month-label"></div>
+    <button class="month-nav-btn" id="month-next" onclick="changeMonth(1)">▶</button>
+    <button class="month-current-btn" onclick="goCurrentMonth()">今月</button>
+  </div>
+
+  <div class="hero-stat">
+    <div class="hero-label">累計資産</div>
+    <div id="asset-display">
+      <div class="edit-trigger" onclick="toggleAssetEdit(true)">
+        <span class="hero-value green" id="dash-total-asset">¥1,730,000</span>
+        <span class="edit-icon">✏️</span>
+      </div>
+    </div>
+    <div id="asset-edit" style="display:none">
+      <div class="inline-edit">
+        <input type="number" id="input-asset" placeholder="1730000" inputmode="numeric">
+        <button class="btn-sm btn-primary" onclick="saveAsset()">保存</button>
+        <button class="btn-sm btn-outline" onclick="toggleAssetEdit(false)">戻す</button>
+      </div>
+    </div>
+    <div class="hero-sub">目標まで残り <span id="dash-remaining">¥770,000</span></div>
+    <div class="progress-wrap"><div class="progress-bar" id="pb-asset" style="background:var(--green);width:69%"></div></div>
+  </div>
+
+  <div class="grid2" style="margin-bottom:12px">
+    <div class="stat">
+      <div class="stat-label">今月の副業収入</div>
+      <div class="stat-value accent" id="dash-salon">¥0</div>
+      <div class="stat-sub">目標: <span id="dash-salon-target">¥50,000</span></div>
+      <div class="progress-wrap"><div class="progress-bar" id="pb-salon" style="background:var(--accent);width:0%"></div></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">今月の変動費</div>
+      <div class="stat-value" id="dash-variable">¥0</div>
+      <div class="stat-sub">上限: ¥50,000</div>
+      <div class="progress-wrap"><div class="progress-bar" id="pb-variable" style="background:var(--green);width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="stat" style="margin-bottom:12px">
+    <div class="stat-label">今月の貯金見込み</div>
+    <div class="stat-value" id="dash-chokin">¥0</div>
+    <div class="stat-sub">死守ライン: ¥50,000</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">今月サマリー（<span id="current-month-label"></span>）</div>
+    <table class="table">
+      <tr><td style="color:var(--text2)">業務委託（確定）</td><td style="text-align:right;font-family:'Space Mono',monospace"><span class="edit-trigger" onclick="startInlineEdit('contract')"><span id="s-contract">¥270,000</span> <span class="edit-icon">✏️</span></span></td></tr>
+      <tr><td style="color:var(--text2)">副業目標</td><td style="text-align:right;font-family:'Space Mono',monospace" id="s-salon-target">¥50,000</td></tr>
+      <tr><td style="color:var(--text2)">固定費</td><td style="text-align:right;font-family:'Space Mono',monospace"><span class="edit-trigger" onclick="startInlineEdit('fixed')"><span id="s-fixed">¥212,702</span> <span class="edit-icon">✏️</span></span></td></tr>
+      <tr><td style="color:var(--text2)">変動費上限</td><td style="text-align:right;font-family:'Space Mono',monospace"><span class="edit-trigger" onclick="startInlineEdit('varLimit')"><span id="s-var-limit">¥50,000</span> <span class="edit-icon">✏️</span></span></td></tr>
+      <tr style="border-top:1px solid var(--border)"><td style="font-weight:700">貯金目標</td><td style="text-align:right;font-family:'Space Mono',monospace;color:var(--green);font-weight:700" id="s-chokin-target">-</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title">副業収入を追加</div>
+    <div class="form-stack">
+      <div class="form-group">
+        <label>案件名・メモ</label>
+        <input type="text" id="input-salon-memo" placeholder="サロンA Web構築">
+      </div>
+      <div class="form-group">
+        <label>金額（円）</label>
+        <input type="number" id="input-salon" placeholder="30000" inputmode="numeric">
+      </div>
+      <button class="btn btn-primary" onclick="addSalonIncome()">追加する</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">副業収入の内訳</div>
+    <div id="salon-list"><div style="color:var(--text2);font-size:12px;text-align:center;padding:12px">まだ入力がありません</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">今月の変動費内訳</div>
+    <div id="expense-summary-list" style="color:var(--text2);font-size:13px;text-align:center;padding:16px">まだ支出が入力されていません</div>
+  </div>
+</div>
+
+<!-- EXPENSE -->
+<div class="panel" id="panel-expense">
+  <div class="stat" style="margin-bottom:12px">
+    <div class="stat-label">今月の変動費合計</div>
+    <div style="font-size:28px;font-weight:700;font-family:'Space Mono',monospace;margin:4px 0" id="exp-total-disp">¥0</div>
+    <div style="font-size:12px;color:var(--text2)">上限まで残り <span id="exp-remaining" class="green">¥50,000</span>（上限: <span id="exp-limit-label">¥50,000</span>）</div>
+    <div class="progress-wrap"><div class="progress-bar" id="pb-exp" style="background:var(--green);width:0%"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">支出を追加</div>
+    <div class="form-stack">
+      <div class="form-group">
+        <label>日付</label>
+        <input type="date" id="exp-date">
+      </div>
+      <div class="form-group">
+        <label>カテゴリ</label>
+        <select id="exp-category">
+          <option value="食費">食費</option>
+          <option value="外食">外食</option>
+          <option value="カフェ">カフェ（仕事）</option>
+          <option value="日用品">日用品</option>
+          <option value="交通費">交通費</option>
+          <option value="医療">医療</option>
+          <option value="娯楽">娯楽</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>金額（円）</label>
+        <input type="number" id="exp-amount" placeholder="1500" inputmode="numeric">
+      </div>
+      <div class="form-group">
+        <label>メモ（任意）</label>
+        <input type="text" id="exp-memo" placeholder="スーパー">
+      </div>
+      <button class="btn btn-primary" onclick="addExpense()">追加する</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">カテゴリ別</div>
+    <div id="cat-breakdown"><div style="color:var(--text2);font-size:12px;text-align:center;padding:12px">まだ入力がありません</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">履歴</div>
+    <div id="expense-list"><div style="color:var(--text2);font-size:12px;text-align:center;padding:12px">まだ入力がありません</div></div>
+  </div>
+</div>
+
+<!-- ROADMAP -->
+<div class="panel" id="panel-roadmap">
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">ゴール逆算サマリー</div>
+    <div class="grid3">
+      <div class="stat"><div class="stat-label">出発まで</div><div class="stat-value accent" id="months-left">--ヶ月</div></div>
+      <div class="stat"><div class="stat-label">必要貯金（月）</div><div class="stat-value yellow">¥35,000</div><div class="stat-sub">死守ライン</div></div>
+      <div class="stat"><div class="stat-label">損切り判断</div><div class="stat-value orange">2026/6末</div><div class="stat-sub">受注0なら撤退</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ロードマップ</div>
+    <div id="roadmap-list"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">データ管理</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn btn-primary" onclick="exportText()">データをコピー</button>
+      <textarea id="import-text" rows="4" placeholder="ここにペーストして「復元」を押す"></textarea>
+      <button class="btn btn-outline" onclick="importText()">復元する</button>
+    </div>
+  </div>
+</div>
+
+
+</div><!-- end main -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="nav-item active" id="nav-dashboard" onclick="showTab('dashboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span class="nav-label">ホーム</span>
+  </div>
+  <div class="nav-item" id="nav-expense" onclick="showTab('expense')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span class="nav-label">支出入力</span>
+  </div>
+  <div class="nav-item" id="nav-roadmap" onclick="showTab('roadmap')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <span class="nav-label">ロードマップ</span>
+  </div>
+</nav>
+
+<script>
+// ======= AUTO CURRENT MONTH =======
+function getCurrentMonth() {
+  const now = new Date();
+  return now.getFullYear() + '/' + (now.getMonth() + 1);
+}
+
+const CURRENT_MONTH = getCurrentMonth();
+
+// ======= ROADMAP DATA =======
+const ROADMAP = [
+  { month:'2026/4',  task:'サロン営業継続（週10件）・初受注1件',   savings:'110万', incomeTarget:50000,   tag:'', fixed:232702 },
+  { month:'2026/5',  task:'2件受注・損切り判断準備',               savings:'116万', incomeTarget:100000,  tag:'', fixed:224002 },
+  { month:'2026/6',  task:'損切り判断月：受注0なら撤退',           savings:'122万', incomeTarget:100000,  tag:'warn', fixed:224002 },
+  { month:'2026/7',  task:'案件2〜3本安定化・次の手決める',        savings:'128万', incomeTarget:100000,  tag:'', fixed:224002 },
+  { month:'2026/8',  task:'出産・副業セーブ',                      savings:'134万', incomeTarget:50000,   tag:'baby', fixed:224002 },
+  { month:'2026/9',  task:'仕事ペース戻す',                        savings:'140万', incomeTarget:100000,  tag:'', fixed:224002 },
+  { month:'2026/10', task:'月収45万到達目標・視察検討',            savings:'146万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2026/11', task:'視察予約（航空券・ホテル）',             savings:'152万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2026/12', task:'マレーシア視察',                        savings:'158万', incomeTarget:150000,  tag:'check', fixed:224002 },
+  { month:'2027/1',  task:'奥さんと移住判断',                      savings:'164万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/2',  task:'移住決定なら準備スタート',              savings:'170万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/3',  task:'ビザ種類決める',                        savings:'176万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/4',  task:'猫：マイクロチップ',                    savings:'182万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/5',  task:'猫：狂犬病ワクチン',                    savings:'188万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/6',  task:'中間チェック（貯金200万近く）',          savings:'194万', incomeTarget:150000,  tag:'check', fixed:224002 },
+  { month:'2027/7',  task:'猫：抗体検査',                          savings:'200万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/8',  task:'家探し（日本からオンライン）',           savings:'206万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/9',  task:'ビザ申請',                              savings:'212万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/10', task:'家契約・海外保険決定',                  savings:'218万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/11', task:'保険・荷物整理',                        savings:'224万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2027/12', task:'最終準備・お金確認',                    savings:'230万', incomeTarget:150000,  tag:'', fixed:224002 },
+  { month:'2028/1',  task:'出発🎉',                               savings:'236万以上', incomeTarget:150000, tag:'depart', fixed:224002 },
+];
+
+// ======= STATE (month-keyed) =======
+function migrateState(raw) {
+  if (!raw) return { totalAsset: 1730000, months: {} };
+  // Migrate from old flat format
+  if (!raw.months) {
+    const oldMonth = raw._month || CURRENT_MONTH;
+    const migrated = {
+      totalAsset: raw.totalAsset || 1730000,
+      months: {}
+    };
+    migrated.months[oldMonth] = {
+      salonIncome: raw.salonIncome || 0,
+      salonMemo: raw.salonMemo || '',
+      expenses: raw.expenses || [],
+    };
+    return migrated;
+  }
+  return raw;
+}
+
+const SEED_DATA = {"totalAsset":1730000,"months":{"2026/4":{"salonIncomes":[{"memo":"ゆっくり台本2月","amount":7385,"id":1775653242488},{"memo":"ゆっくり台本3月","amount":11298,"id":1775653274180},{"memo":"ゆっくり台本4月","amount":6946,"id":1775653302127}],"expenses":[{"date":"2026-04-02","category":"カフェ","amount":530,"memo":"","id":1775214887583},{"date":"2026-04-03","category":"娯楽","amount":35468,"memo":"りこ誕生日企画","id":1775214913129},{"date":"2026-04-03","category":"カフェ","amount":1060,"memo":"","id":1775214932403},{"date":"2026-04-03","category":"娯楽","amount":7780,"memo":"ジェフ千葉","id":1775214944353},{"date":"2026-04-04","category":"カフェ","amount":550,"memo":"","id":1775653126129},{"date":"2026-04-07","category":"交通費","amount":1000,"memo":"チャージ","id":1775653180133},{"date":"2026-04-07","category":"交通費","amount":3300,"memo":"誕生日企画","id":1775653192624}]}}};
+
+let state;
+try {
+  const saved = localStorage.getItem('consul_state');
+  if (saved) {
+    state = migrateState(JSON.parse(saved));
+  } else {
+    state = migrateState(SEED_DATA);
+    localStorage.setItem('consul_state', JSON.stringify(state));
+  }
+} catch(e) {
+  localStorage.removeItem('consul_state');
+  state = migrateState(SEED_DATA);
+  localStorage.setItem('consul_state', JSON.stringify(state));
+}
+let viewMonth = CURRENT_MONTH; // which month the user is viewing
+
+function getMonthData(month) {
+  if (!state.months[month]) {
+    state.months[month] = { salonIncomes: [], expenses: [], contract: null, fixed: null, varLimit: null };
+  }
+  // migrate old salonIncome (number) to salonIncomes (array)
+  const md = state.months[month];
+  if (!md.salonIncomes) {
+    md.salonIncomes = [];
+    if (md.salonIncome) {
+      md.salonIncomes.push({ memo: md.salonMemo || '', amount: md.salonIncome, id: Date.now() });
+    }
+    delete md.salonIncome;
+    delete md.salonMemo;
+  }
+  return md;
+}
+
+function getSalonTotal(md) {
+  return (md.salonIncomes || []).reduce((s, e) => s + e.amount, 0);
+}
+
+function getRoadmapData(month) {
+  return ROADMAP.find(r => r.month === month) || { incomeTarget: 50000, fixed: 204002 };
+}
+
+function saveState() {
+  localStorage.setItem('consul_state', JSON.stringify(state));
+}
+
+// ======= INIT =======
+function init() {
+  viewMonth = CURRENT_MONTH;
+  updateViewMonthLabel();
+  updateDashboard();
+  renderRoadmap();
+  updateExpenseUI();
+  updateMonthsLeft();
+  prefillSalonInput();
+}
+
+// ======= MONTH NAVIGATION =======
+function getAllMonths() {
+  const months = ROADMAP.map(r => r.month);
+  // Also include any months in state that aren't in roadmap
+  Object.keys(state.months).forEach(m => { if (!months.includes(m)) months.push(m); });
+  return months.sort();
+}
+
+function changeMonth(dir) {
+  const months = getAllMonths();
+  const idx = months.indexOf(viewMonth);
+  const newIdx = idx + dir;
+  if (newIdx >= 0 && newIdx < months.length) {
+    viewMonth = months[newIdx];
+    updateViewMonthLabel();
+    updateDashboard();
+    updateExpenseUI();
+    prefillSalonInput();
+  }
+}
+
+function goCurrentMonth() {
+  viewMonth = CURRENT_MONTH;
+  updateViewMonthLabel();
+  updateDashboard();
+  updateExpenseUI();
+  prefillSalonInput();
+}
+
+function updateViewMonthLabel() {
+  document.getElementById('view-month-label').textContent = viewMonth;
+  const months = getAllMonths();
+  const idx = months.indexOf(viewMonth);
+  document.getElementById('month-prev').disabled = idx <= 0;
+  document.getElementById('month-next').disabled = idx >= months.length - 1;
+}
+
+function prefillSalonInput() {
+  document.getElementById('input-salon').value = '';
+  document.getElementById('input-salon-memo').value = '';
+  updateSalonList();
+}
+
+// ======= TABS =======
+function showTab(name) {
+  document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('nav-' + name).classList.add('active');
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+// ======= ASSET EDIT =======
+function toggleAssetEdit(show) {
+  document.getElementById('asset-display').style.display = show ? 'none' : '';
+  document.getElementById('asset-edit').style.display = show ? '' : 'none';
+  if (show) {
+    document.getElementById('input-asset').value = state.totalAsset;
+    document.getElementById('input-asset').focus();
+  }
+}
+
+function saveAsset() {
+  const val = parseInt(document.getElementById('input-asset').value) || 0;
+  state.totalAsset = val;
+  saveState();
+  toggleAssetEdit(false);
+  updateDashboard();
+}
+
+// ======= DASHBOARD =======
+function getContract(md, rd) { return md.contract != null ? md.contract : 270000; }
+function getFixed(md, rd) { return md.fixed != null ? md.fixed : rd.fixed; }
+function getVarLimit(md, rd) { return md.varLimit != null ? md.varLimit : 50000; }
+
+function updateDashboard() {
+  const md = getMonthData(viewMonth);
+  const rd = getRoadmapData(viewMonth);
+  const totalVar = md.expenses.reduce((s, e) => s + e.amount, 0);
+  const salon = getSalonTotal(md);
+  const target = rd.incomeTarget;
+  const contract = getContract(md, rd);
+  const fixed = getFixed(md, rd);
+  const varLimit = getVarLimit(md, rd);
+  const chokin = contract + salon - fixed - totalVar;
+
+  document.getElementById('dash-total-asset').textContent = '¥' + state.totalAsset.toLocaleString();
+  document.getElementById('dash-salon').textContent = '¥' + salon.toLocaleString();
+  document.getElementById('dash-salon-target').textContent = '¥' + target.toLocaleString();
+  document.getElementById('dash-variable').textContent = '¥' + totalVar.toLocaleString();
+  document.getElementById('dash-chokin').textContent = '¥' + chokin.toLocaleString();
+  document.getElementById('dash-chokin').className = 'stat-value ' + (chokin >= 50000 ? 'green' : chokin >= 30000 ? 'yellow' : 'red');
+
+  const remaining = 2500000 - state.totalAsset;
+  document.getElementById('dash-remaining').textContent = '¥' + remaining.toLocaleString();
+
+  setBar('pb-salon', salon / target * 100, salon >= target ? 'var(--green)' : 'var(--accent)');
+  setBar('pb-variable', totalVar / varLimit * 100, totalVar > varLimit ? 'var(--red)' : totalVar > varLimit * 0.8 ? 'var(--yellow)' : 'var(--green)');
+  setBar('pb-asset', state.totalAsset / 2500000 * 100, 'var(--green)');
+
+  document.getElementById('current-month-label').textContent = viewMonth;
+  document.getElementById('s-contract').textContent = '¥' + contract.toLocaleString();
+  document.getElementById('s-salon-target').textContent = '¥' + target.toLocaleString();
+  document.getElementById('s-fixed').textContent = '¥' + fixed.toLocaleString();
+  document.getElementById('s-var-limit').textContent = '¥' + varLimit.toLocaleString();
+  document.getElementById('s-chokin-target').textContent = '¥' + (contract + target - fixed - varLimit).toLocaleString();
+
+  // expense summary in dashboard
+  const catMap = {};
+  md.expenses.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
+  const cats = Object.entries(catMap).sort((a,b) => b[1]-a[1]);
+  const el = document.getElementById('expense-summary-list');
+  if (cats.length === 0) {
+    el.innerHTML = '<div style="color:var(--text2);text-align:center;padding:20px;font-size:12px">まだ支出が入力されていません</div>';
+  } else {
+    el.innerHTML = cats.map(([cat, amt]) =>
+      `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span style="color:var(--text2)">${cat}</span>
+        <span style="font-family:'Space Mono',monospace">¥${amt.toLocaleString()}</span>
+      </div>`
+    ).join('');
+  }
+}
+
+function setBar(id, pct, color) {
+  const el = document.getElementById(id);
+  el.style.width = Math.min(pct, 100) + '%';
+  el.style.background = color;
+}
+
+// ======= INLINE EDIT (contract / fixed / varLimit) =======
+function startInlineEdit(field) {
+  const md = getMonthData(viewMonth);
+  const rd = getRoadmapData(viewMonth);
+  const current = field === 'contract' ? getContract(md, rd) : field === 'fixed' ? getFixed(md, rd) : getVarLimit(md, rd);
+  const label = field === 'contract' ? '業務委託' : field === 'fixed' ? '固定費' : '変動費上限';
+  const el = document.getElementById(field === 'contract' ? 's-contract' : field === 'fixed' ? 's-fixed' : 's-var-limit');
+  const parent = el.closest('.edit-trigger');
+  parent.outerHTML = `<div class="inline-edit" id="edit-${field}">
+    <input type="number" value="${current}" inputmode="numeric" style="font-size:13px;padding:6px 8px;">
+    <button class="btn-sm btn-primary" onclick="saveInlineEdit('${field}')" style="font-size:11px;padding:4px 10px;">保存</button>
+    <button class="btn-sm btn-outline" onclick="cancelInlineEdit()" style="font-size:11px;padding:4px 10px;">戻す</button>
+  </div>`;
+  document.querySelector(`#edit-${field} input`).focus();
+}
+
+function saveInlineEdit(field) {
+  const input = document.querySelector(`#edit-${field} input`);
+  const val = parseInt(input.value) || 0;
+  const md = getMonthData(viewMonth);
+  md[field] = val;
+  saveState();
+  rebuildSummaryTable();
+  updateDashboard();
+  updateExpenseUI();
+}
+
+function cancelInlineEdit() {
+  rebuildSummaryTable();
+  updateDashboard();
+}
+
+function rebuildSummaryTable() {
+  const md = getMonthData(viewMonth);
+  const rd = getRoadmapData(viewMonth);
+  const contract = getContract(md, rd);
+  const fixed = getFixed(md, rd);
+  const varLimit = getVarLimit(md, rd);
+  // Restore edit-trigger elements if they were replaced by inline-edit
+  ['contract', 'fixed', 'varLimit'].forEach(field => {
+    const editEl = document.getElementById('edit-' + field);
+    if (editEl) {
+      const spanId = field === 'contract' ? 's-contract' : field === 'fixed' ? 's-fixed' : 's-var-limit';
+      const val = field === 'contract' ? contract : field === 'fixed' ? fixed : varLimit;
+      editEl.outerHTML = `<span class="edit-trigger" onclick="startInlineEdit('${field}')"><span id="${spanId}">¥${val.toLocaleString()}</span> <span class="edit-icon">✏️</span></span>`;
+    }
+  });
+  document.getElementById('s-contract').textContent = '¥' + contract.toLocaleString();
+  document.getElementById('s-fixed').textContent = '¥' + fixed.toLocaleString();
+  document.getElementById('s-var-limit').textContent = '¥' + varLimit.toLocaleString();
+}
+
+function addSalonIncome() {
+  const amount = parseInt(document.getElementById('input-salon').value) || 0;
+  const memo = document.getElementById('input-salon-memo').value;
+  if (!amount) return;
+  const md = getMonthData(viewMonth);
+  md.salonIncomes.push({ memo, amount, id: Date.now() });
+  saveState();
+  document.getElementById('input-salon').value = '';
+  document.getElementById('input-salon-memo').value = '';
+  updateSalonList();
+  updateDashboard();
+}
+
+function deleteSalonIncome(id) {
+  const md = getMonthData(viewMonth);
+  md.salonIncomes = md.salonIncomes.filter(e => e.id !== id);
+  saveState();
+  updateSalonList();
+  updateDashboard();
+}
+
+function updateSalonList() {
+  const md = getMonthData(viewMonth);
+  const list = md.salonIncomes || [];
+  const el = document.getElementById('salon-list');
+  if (list.length === 0) {
+    el.innerHTML = '<div style="color:var(--text2);font-size:12px;text-align:center;padding:12px">まだ入力がありません</div>';
+  } else {
+    el.innerHTML = list.map(e => `
+      <div class="exp-item">
+        <div>
+          <div class="exp-cat">${e.memo || '（メモなし）'}</div>
+        </div>
+        <div class="exp-right">
+          <span class="exp-amt accent">¥${e.amount.toLocaleString()}</span>
+          <button class="btn-danger-sm" onclick="deleteSalonIncome(${e.id})">削除</button>
+        </div>
+      </div>`).join('') +
+      `<div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:700;border-top:1px solid var(--border)">
+        <span>合計</span>
+        <span style="font-family:'Space Mono',monospace;color:var(--accent)">¥${getSalonTotal(md).toLocaleString()}</span>
+      </div>`;
+  }
+}
+
+// ======= EXPENSE =======
+function addExpense() {
+  const date = document.getElementById('exp-date').value || new Date().toISOString().slice(0,10);
+  const category = document.getElementById('exp-category').value;
+  const amount = parseInt(document.getElementById('exp-amount').value) || 0;
+  const memo = document.getElementById('exp-memo').value;
+  if (!amount) return;
+
+  const md = getMonthData(viewMonth);
+  md.expenses.push({ date, category, amount, memo, id: Date.now() });
+  saveState();
+  document.getElementById('exp-amount').value = '';
+  document.getElementById('exp-memo').value = '';
+  updateExpenseUI();
+  updateDashboard();
+}
+
+function deleteExpense(id) {
+  const md = getMonthData(viewMonth);
+  md.expenses = md.expenses.filter(e => e.id !== id);
+  saveState();
+  updateExpenseUI();
+  updateDashboard();
+}
+
+function updateExpenseUI() {
+  const md = getMonthData(viewMonth);
+  const rd = getRoadmapData(viewMonth);
+  const varLimit = getVarLimit(md, rd);
+  const total = md.expenses.reduce((s, e) => s + e.amount, 0);
+  const remaining = varLimit - total;
+
+  document.getElementById('exp-total-disp').textContent = '¥' + total.toLocaleString();
+  document.getElementById('exp-total-disp').style.color = total > varLimit ? 'var(--red)' : total > varLimit * 0.8 ? 'var(--yellow)' : 'var(--text)';
+  document.getElementById('exp-remaining').textContent = remaining >= 0 ? '¥' + remaining.toLocaleString() : '▲¥' + Math.abs(remaining).toLocaleString();
+  document.getElementById('exp-remaining').className = remaining >= 0 ? 'green' : 'red';
+  setBar('pb-exp', total / varLimit * 100, total > varLimit ? 'var(--red)' : total > varLimit * 0.8 ? 'var(--yellow)' : 'var(--green)');
+  document.getElementById('exp-limit-label').textContent = '¥' + varLimit.toLocaleString();
+
+  // category breakdown
+  const catMap = {};
+  md.expenses.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + e.amount; });
+  const catEl = document.getElementById('cat-breakdown');
+  const catEntries = Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
+  if (catEntries.length === 0) {
+    catEl.innerHTML = '<div style="color:var(--text2);font-size:12px;text-align:center;padding:12px">まだ入力がありません</div>';
+  } else {
+    catEl.innerHTML = catEntries.map(([cat, amt]) => {
+      const pct = Math.round(amt / total * 100);
+      return `<div style="margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+          <span style="color:var(--text2)">${cat}</span>
+          <span style="font-family:'Space Mono',monospace">¥${amt.toLocaleString()} (${pct}%)</span>
+        </div>
+        <div class="progress-wrap"><div class="progress-bar" style="background:var(--accent);width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  // list
+  const sorted = [...md.expenses].sort((a,b) => b.id - a.id);
+  document.getElementById('expense-list').innerHTML = sorted.length === 0
+    ? '<div style="color:var(--text2);font-size:12px;text-align:center;padding:12px">まだ入力がありません</div>'
+    : sorted.map(e => `
+      <div class="exp-item">
+        <div>
+          <div class="exp-cat">${e.category}</div>
+          <div class="exp-memo">${e.memo ? e.memo + ' · ' : ''}${e.date}</div>
+        </div>
+        <div class="exp-right">
+          <span class="exp-amt">¥${e.amount.toLocaleString()}</span>
+          <button class="btn-danger-sm" onclick="deleteExpense(${e.id})">削除</button>
+        </div>
+      </div>`).join('');
+
+  document.getElementById('exp-date').value = new Date().toISOString().slice(0,10);
+}
+
+// ======= ROADMAP =======
+function renderRoadmap() {
+  const list = document.getElementById('roadmap-list');
+  list.innerHTML = ROADMAP.map((r, i) => {
+    const isCurrent = r.month === CURRENT_MONTH;
+    const isPast = i < ROADMAP.findIndex(x => x.month === CURRENT_MONTH);
+    const dotColor = isPast ? 'var(--text3)' : isCurrent ? 'var(--accent)' : r.tag === 'depart' ? 'var(--green)' : r.tag === 'warn' ? 'var(--yellow)' : 'var(--border)';
+    const tag = r.tag === 'warn' ? '<span class="tag tag-warn">⚠️ 損切り</span>' :
+                r.tag === 'baby' ? '<span class="tag tag-baby">🍼 出産</span>' :
+                r.tag === 'depart' ? '<span class="tag tag-depart">🛫 出発</span>' :
+                r.tag === 'check' ? '<span class="tag tag-check">📊 チェック</span>' : '';
+    return `
+      <div class="roadmap-row">
+        <div class="rm-month">${r.month}</div>
+        <div class="rm-line">
+          <div class="rm-dot" style="background:${dotColor};${isCurrent?'box-shadow:0 0 8px var(--accent)':''}"></div>
+          ${i < ROADMAP.length-1 ? '<div class="rm-vline"></div>' : ''}
+        </div>
+        <div class="rm-content${isCurrent?' current':''}">
+          <div class="rm-task">${tag}${r.task}</div>
+          <div class="rm-meta">
+            <span>貯金累計: ${r.savings}</span>
+            <span>副業目標: ¥${r.incomeTarget.toLocaleString()}</span>
+            ${isCurrent ? '<span style="color:var(--accent)">◀ 今ここ</span>' : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function updateMonthsLeft() {
+  const now = new Date();
+  const depart = new Date('2028-01-01');
+  const months = Math.round((depart - now) / (1000 * 60 * 60 * 24 * 30));
+  document.getElementById('months-left').textContent = months + 'ヶ月';
+}
+
+
+// ======= EXPORT / IMPORT (コピペ方式) =======
+function exportText() {
+  const text = JSON.stringify(state);
+  navigator.clipboard.writeText(text).then(() => {
+    alert('コピーしました！新しいURLでペーストしてください');
+  }).catch(() => {
+    // clipboard APIが使えない場合はテキストエリアに表示
+    document.getElementById('import-text').value = text;
+    document.getElementById('import-text').select();
+    alert('下のテキストを全選択してコピーしてください');
+  });
+}
+
+function importText() {
+  const text = document.getElementById('import-text').value.trim();
+  if (!text) { alert('テキストを貼り付けてください'); return; }
+  try {
+    const imported = JSON.parse(text);
+    state = migrateState(imported);
+    saveState();
+    document.getElementById('import-text').value = '';
+    alert('復元しました！ページを再読み込みします');
+    location.reload();
+  } catch(err) {
+    alert('データが正しくありません: ' + err.message);
+  }
+}
+
+// ======= THEME =======
+function initTheme() {
+  const saved = localStorage.getItem('consul_theme');
+  if (saved === 'dark') {
+    document.documentElement.classList.add('dark');
+    document.getElementById('theme-toggle').textContent = '☀️';
+    document.querySelector('meta[name="theme-color"]').content = '#0d0f14';
+  } else {
+    document.documentElement.classList.remove('dark');
+    document.getElementById('theme-toggle').textContent = '🌙';
+    document.querySelector('meta[name="theme-color"]').content = '#f5f5f7';
+  }
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('consul_theme', isDark ? 'dark' : 'light');
+  document.getElementById('theme-toggle').textContent = isDark ? '☀️' : '🌙';
+  document.querySelector('meta[name="theme-color"]').content = isDark ? '#0d0f14' : '#f5f5f7';
+}
+
+initTheme();
+init();
+</script>
+</body>
+</html>
